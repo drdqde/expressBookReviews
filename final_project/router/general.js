@@ -88,3 +88,74 @@ public_users.get('/review/:isbn', function (req, res) {
         return res.status(404).json({ message: `No reviews found for book with ISBN ${isbn}.` })
     }
 });
+
+/// Implementation with async
+/// All books
+public_users.get('/_promises', async function (req, res) {
+    const promise = new Promise((resolve, reject) => {
+        setTimeout(() => resolve(books), 600);
+    });
+
+    const result = await promise;
+    // Assuming response.data contains the list of books
+    return res.status(200).send(JSON.stringify(result, null, 4));
+});
+
+// Get book details based on ISBN
+public_users.get('/isbn_promises/:isbn', async function (req, res) {
+    let isbn = req.params.isbn
+    //Check whether there is a book for this ISBN
+    const promise = new Promise((resolve, reject) => {
+        setTimeout(() => resolve(books[isbn]), 600);
+    });
+    const result = await promise;
+    if (!Object.keys(books).includes(isbn)) {
+        return res.status(404).json({ message: `No book found for ISBN ${isbn}.` })
+    } else {
+        return res.status(200).send(JSON.stringify(result, null, 4));
+    }
+});
+
+// Get book details based on author
+public_users.get('/author_promises/:author', async function (req, res) {
+    let author = req.params.author;
+    const promise = new Promise((resolve, reject) => {
+        setTimeout(() => {
+            const books_by_author = Object.values(books).filter(book => book.author === author);
+            resolve(books_by_author)
+        }, 600);
+    });
+
+    const result = await promise;
+
+    if (Object.keys(result).length > 0) {
+        return res.status(200).send(JSON.stringify(result, null, 4));
+    } else {
+        return res.status(404).json({ message: `No book found for author ${author}.` })
+    }
+
+});
+
+
+// Get all books based on title
+public_users.get('/title_promises/:title', async function (req, res) {
+    let title = req.params.title;
+    const promise = new Promise((resolve, reject) => {
+        setTimeout(() => {
+            const books_by_title = Object.values(books).filter(book => book.title === title);
+            resolve(books_by_title)
+        }, 600);
+    });
+    const result = await promise;
+    // Check whether there are books for the title
+    if (Object.keys(result).length > 0) {
+        return res.status(200).send(JSON.stringify(result, null, 4));
+    } else {
+        return res.status(404).json({ message: `No book found for title ${title}.` })
+    }
+
+});
+
+
+module.exports.general = public_users;
+
